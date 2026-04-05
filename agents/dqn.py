@@ -23,10 +23,10 @@ class RainbowDQN:
         gamma: float = 0.99,
         buffer_capacity: int = 100_000,
         batch_size: int = 64,
-        target_update_freq: int = 1000,
+        target_update_freq: int = 500,
         n_step: int = 3,
         beta_start: float = 0.4,
-        beta_frames: int = 100_000,
+        beta_frames: int = 5_000,
     ) -> None:
         self.num_actions = num_actions
         self.gamma = gamma
