@@ -130,6 +130,9 @@ def train(k: int = K) -> None:
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
     os.makedirs(LOG_DIR, exist_ok=True)
 
+    log_path    = os.path.join(LOG_DIR, f"ppo_k{k}_log.json")
+    ckpt_prefix = f"ppo_k{k}"
+
     env   = ConnectK(k=k)
     agent = PPO(n_steps=N_STEPS)
 
@@ -197,7 +200,7 @@ def train(k: int = K) -> None:
             }
             log.append(log_entry)
 
-            with open(os.path.join(LOG_DIR, "ppo_log.json"), "w") as f:
+            with open(log_path, "w") as f:
                 json.dump(log, f, indent=2)
 
             for key in acc:
@@ -205,7 +208,7 @@ def train(k: int = K) -> None:
             next_eval += EVAL_FREQ
 
         if total_timesteps >= next_save:
-            ckpt_path = os.path.join(CHECKPOINT_DIR, f"ppo_step{total_timesteps:07d}.pt")
+            ckpt_path = os.path.join(CHECKPOINT_DIR, f"{ckpt_prefix}_step{total_timesteps:07d}.pt")
             agent.save(ckpt_path)
             print(f"  [step {total_timesteps}] Checkpoint saved → {ckpt_path}")
             next_save += SAVE_FREQ
@@ -213,7 +216,7 @@ def train(k: int = K) -> None:
     print("-" * 72)
     print("Training complete.")
 
-    final_path = os.path.join(CHECKPOINT_DIR, "ppo_final.pt")
+    final_path = os.path.join(CHECKPOINT_DIR, f"{ckpt_prefix}_final.pt")
     agent.save(final_path)
     print(f"Final model saved → {final_path}")
 

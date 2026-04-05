@@ -134,6 +134,9 @@ def train(k: int = K) -> None:
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
     os.makedirs(LOG_DIR, exist_ok=True)
 
+    log_path  = os.path.join(LOG_DIR, f"dqn_k{k}_log.json")
+    ckpt_prefix = f"dqn_k{k}"
+
     env   = ConnectK(k=k)
     agent = RainbowDQN()
 
@@ -206,21 +209,21 @@ def train(k: int = K) -> None:
             }
             log.append(log_entry)
 
-            with open(os.path.join(LOG_DIR, "dqn_log.json"), "w") as f:
+            with open(log_path, "w") as f:
                 json.dump(log, f, indent=2)
 
             recent_losses = []
             recent_wins = recent_losses_count = recent_draws = 0
 
         if ep % SAVE_FREQ == 0:
-            ckpt_path = os.path.join(CHECKPOINT_DIR, f"dqn_ep{ep:05d}.pt")
+            ckpt_path = os.path.join(CHECKPOINT_DIR, f"{ckpt_prefix}_ep{ep:05d}.pt")
             agent.save(ckpt_path)
             print(f"  [ep {ep}] Checkpoint saved → {ckpt_path}")
 
     print("-" * 65)
     print("Training complete.")
 
-    final_path = os.path.join(CHECKPOINT_DIR, "dqn_final.pt")
+    final_path = os.path.join(CHECKPOINT_DIR, f"{ckpt_prefix}_final.pt")
     agent.save(final_path)
     print(f"Final model saved → {final_path}")
 
