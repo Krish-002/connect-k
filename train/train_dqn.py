@@ -216,7 +216,7 @@ def train(k: int = K) -> None:
 
         # ---- Evaluation & logging ----
         if ep % EVAL_FREQ == 0:
-            eval_results = eval_agent(agent, env, opponent_fn, n_games=100)
+            eval_results = eval_agent(agent, env, _make_random_opponent(), n_games=100)
             avg_loss = float(np.mean(recent_losses)) if recent_losses else float("nan")
             total_recent = recent_wins + recent_losses_count + recent_draws
             train_win  = recent_wins          / max(total_recent, 1)
