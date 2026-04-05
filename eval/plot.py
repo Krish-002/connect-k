@@ -141,15 +141,17 @@ def plot_eval_results(
 
 
 if __name__ == "__main__":
-    DQN_LOG = "logs/dqn_log.json"
-    PPO_LOG = "logs/ppo_log.json"
-    OUT     = "logs/learning_curves.png"
+    for k in [4, 5, 6]:
+        dqn_log = f"logs/dqn_k{k}_log.json"
+        ppo_log = f"logs/ppo_k{k}_log.json"
+        eval_results = f"logs/eval_k{k}_results.json"
 
-    if not os.path.exists(DQN_LOG):
-        print(f"DQN log not found at {DQN_LOG}. Run train/train_dqn.py first.")
-        sys.exit(1)
-    if not os.path.exists(PPO_LOG):
-        print(f"PPO log not found at {PPO_LOG}. Run train/train_ppo.py first.")
-        sys.exit(1)
+        if os.path.exists(dqn_log) and os.path.exists(ppo_log):
+            plot_learning_curves(dqn_log, ppo_log, f"logs/learning_curves_k{k}.png")
+        else:
+            print(f"Skipping learning curves for k={k} (logs not found)")
 
-    plot_learning_curves(DQN_LOG, PPO_LOG, OUT)
+        if os.path.exists(eval_results):
+            plot_eval_results(eval_results, f"logs/eval_bar_k{k}.png")
+        else:
+            print(f"Skipping eval bar for k={k} (eval_results not found)")

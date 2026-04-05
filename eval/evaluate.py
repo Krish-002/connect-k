@@ -386,9 +386,10 @@ def run_full_eval(
     }
 
     os.makedirs("logs", exist_ok=True)
-    with open("logs/eval_results.json", "w") as f:
+    out_path = f"logs/eval_k{k}_results.json"
+    with open(out_path, "w") as f:
         json.dump(results, f, indent=2)
-    print("Results saved → logs/eval_results.json")
+    print(f"Results saved → {out_path}")
 
     return results
 
