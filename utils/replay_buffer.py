@@ -4,44 +4,33 @@ import numpy as np
 
 
 class _SumTree:
-    """
-    Binary sum-tree for O(log n) priority updates and sampling.
-
-    Leaf nodes (indices capacity-1 .. 2*capacity-2) store individual
-    priorities; internal nodes store the sum of their subtree.
-    """
+    # Binary sum-tree. Leaves hold p^alpha, root holds the grand total.
+    # Internal node i stores sum of its subtree; leaves are at [capacity, 2*capacity).
 
     def __init__(self, capacity: int) -> None:
         self.capacity = capacity
         self._tree = np.zeros(2 * capacity, dtype=np.float64)
-        self._write = 0       # next leaf to overwrite
+        self._write = 0
         self._size = 0
-
-    # ------------------------------------------------------------------
-    # Public
-    # ------------------------------------------------------------------
 
     @property
     def total(self) -> float:
-        return float(self._tree[1])  # root holds the grand total
+        return float(self._tree[1])
 
     @property
     def size(self) -> int:
         return self._size
 
     def set(self, leaf_idx: int, priority: float) -> None:
-        """Update priority at leaf_idx (0-based) and propagate to root."""
-        node = leaf_idx + self.capacity  # convert to tree index
+        node = leaf_idx + self.capacity
         delta = priority - self._tree[node]
         self._tree[node] = priority
-        # Propagate upward
         node >>= 1
         while node >= 1:
             self._tree[node] += delta
             node >>= 1
 
     def add(self, priority: float) -> int:
-        """Write priority to the next leaf, return its 0-based leaf index."""
         leaf_idx = self._write
         self.set(leaf_idx, priority)
         self._write = (self._write + 1) % self.capacity
@@ -49,11 +38,7 @@ class _SumTree:
         return leaf_idx
 
     def get(self, value: float) -> tuple[int, float]:
-        """
-        Find the leaf whose cumulative prefix sum first exceeds `value`.
-        Returns (leaf_idx, priority).
-        """
-        node = 1  # start at root
+        node = 1
         while node < self.capacity:
             left = node * 2
             if value <= self._tree[left]:
@@ -69,17 +54,8 @@ class _SumTree:
 
 
 class PrioritizedReplayBuffer:
-    """
-    Prioritized Experience Replay buffer (Schaul et al., 2015).
 
-    Transitions are stored as (state, action, reward, next_state, done).
-    Sampling probability for transition i:
-        P(i) = p_i^alpha / sum_k p_k^alpha
-    Importance-sampling weights:
-        w_i = (N * P(i))^{-beta} / max_j w_j
-    """
-
-    _EPS: float = 1e-6   # added to |td_error| so no priority is zero
+    _EPS: float = 1e-6
 
     def __init__(self, capacity: int, alpha: float = 0.6, beta: float = 0.4) -> None:
         self.capacity = capacity
@@ -88,16 +64,12 @@ class PrioritizedReplayBuffer:
 
         self._tree = _SumTree(capacity)
 
-        # Storage arrays — pre-allocated once we see the first state shape.
+        # pre-allocate storage on first push so we don't need to know state shape upfront
         self._states: np.ndarray | None = None
         self._next_states: np.ndarray | None = None
         self._actions = np.zeros(capacity, dtype=np.int64)
         self._rewards = np.zeros(capacity, dtype=np.float32)
         self._dones = np.zeros(capacity, dtype=np.float32)
-
-    # ------------------------------------------------------------------
-    # Public API
-    # ------------------------------------------------------------------
 
     def push(
         self,
@@ -107,13 +79,12 @@ class PrioritizedReplayBuffer:
         next_state: np.ndarray,
         done: bool,
     ) -> None:
-        """Add a transition with maximum current priority."""
         if self._states is None:
             shape = state.shape
             self._states = np.zeros((self.capacity, *shape), dtype=np.float32)
             self._next_states = np.zeros((self.capacity, *shape), dtype=np.float32)
 
-        # New transitions get the current max priority so they are sampled soon.
+        # new transitions get max priority so they're sampled at least once
         priority = self._tree.max_priority() if self._tree.size > 0 else 1.0
         leaf_idx = self._tree.add(priority ** self.alpha)
 
@@ -126,18 +97,6 @@ class PrioritizedReplayBuffer:
     def sample(
         self, batch_size: int
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[int]]:
-        """
-        Sample a batch using prioritized sampling.
-
-        Returns:
-            states       (batch_size, *state_shape) float32
-            actions      (batch_size,)              int64
-            rewards      (batch_size,)              float32
-            next_states  (batch_size, *state_shape) float32
-            dones        (batch_size,)              float32
-            weights      (batch_size,)              float32  IS corrections
-            indices      list[int]                           leaf indices for priority updates
-        """
         if self._tree.size < batch_size:
             raise ValueError(
                 f"Buffer has only {self._tree.size} transitions, need {batch_size}."
@@ -146,7 +105,7 @@ class PrioritizedReplayBuffer:
         indices: list[int] = []
         priorities: list[float] = []
 
-        # Stratified sampling: divide total priority into batch_size segments.
+        # stratified sampling: split total priority into batch_size equal segments
         segment = self._tree.total / batch_size
         for i in range(batch_size):
             lo, hi = segment * i, segment * (i + 1)
@@ -155,11 +114,11 @@ class PrioritizedReplayBuffer:
             indices.append(leaf_idx)
             priorities.append(priority)
 
-        # Importance-sampling weights: w_i = (N * P(i))^{-beta}
+        # IS weights: w_i = (N * P(i))^{-beta}, normalised so max weight = 1
         n = self._tree.size
         probs = np.array(priorities, dtype=np.float64) / self._tree.total
         weights = (n * probs) ** (-self.beta)
-        weights = (weights / weights.max()).astype(np.float32)  # normalise to [0, 1]
+        weights = (weights / weights.max()).astype(np.float32)
 
         idx = np.array(indices, dtype=np.int64)
         return (
@@ -173,22 +132,16 @@ class PrioritizedReplayBuffer:
         )
 
     def update_priorities(self, indices: list[int], td_errors: np.ndarray) -> None:
-        """Recompute priorities from TD errors and update the sum-tree."""
         for leaf_idx, td_error in zip(indices, td_errors):
             priority = (abs(float(td_error)) + self._EPS) ** self.alpha
             self._tree.set(leaf_idx, priority)
 
     def update_beta(self, beta: float) -> None:
-        """Anneal beta towards 1 over training."""
         self.beta = beta
 
     def __len__(self) -> int:
         return self._tree.size
 
-
-# ----------------------------------------------------------------------
-# Sanity check
-# ----------------------------------------------------------------------
 
 if __name__ == "__main__":
     STATE_SHAPE = (3, 6, 7)
@@ -198,7 +151,6 @@ if __name__ == "__main__":
 
     buf = PrioritizedReplayBuffer(capacity=CAPACITY, alpha=0.6, beta=0.4)
 
-    # Push random transitions
     for _ in range(N_PUSH):
         s = np.random.rand(*STATE_SHAPE).astype(np.float32)
         a = np.random.randint(0, 7)
@@ -209,30 +161,17 @@ if __name__ == "__main__":
 
     print(f"Buffer size after {N_PUSH} pushes: {len(buf)}")
 
-    # Sample a batch
     states, actions, rewards, next_states, dones, weights, indices = buf.sample(BATCH_SIZE)
+    print(f"states: {states.shape}  actions: {actions.shape}  weights: {weights.shape}")
+    print(f"IS weight stats — min={weights.min():.4f}  max={weights.max():.4f}")
 
-    print(f"\nSample shapes:")
-    print(f"  states:      {states.shape}   dtype={states.dtype}")
-    print(f"  actions:     {actions.shape}    dtype={actions.dtype}")
-    print(f"  rewards:     {rewards.shape}    dtype={rewards.dtype}")
-    print(f"  next_states: {next_states.shape}   dtype={next_states.dtype}")
-    print(f"  dones:       {dones.shape}    dtype={dones.dtype}")
-    print(f"  weights:     {weights.shape}    dtype={weights.dtype}")
-    print(f"  indices:     {len(indices)} leaf indices")
+    assert weights.max() <= 1.0 + 1e-6
+    assert weights.min() > 0.0
 
-    print(f"\nIS weight stats:  min={weights.min():.4f}  max={weights.max():.4f}  mean={weights.mean():.4f}")
-    assert weights.max() <= 1.0 + 1e-6, "Weights should be normalised to [0, 1]"
-    assert weights.min() > 0.0, "All weights should be positive"
-
-    # Update priorities with fake TD errors and re-sample to confirm it runs
     fake_td = np.random.rand(BATCH_SIZE).astype(np.float32)
     buf.update_priorities(indices, fake_td)
     _, _, _, _, _, weights2, _ = buf.sample(BATCH_SIZE)
-    print(f"\nAfter priority update — weight stats:  min={weights2.min():.4f}  max={weights2.max():.4f}")
+    print(f"After priority update — min={weights2.min():.4f}  max={weights2.max():.4f}")
 
-    # Beta annealing
     buf.update_beta(0.7)
-    print(f"\nbeta updated to {buf.beta}")
-
-    print("\nAll checks passed.")
+    print(f"beta updated to {buf.beta}")

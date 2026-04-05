@@ -15,30 +15,19 @@ from agents.dqn import RainbowDQN
 from agents.ppo import PPO
 
 
-# ---------------------------------------------------------------------------
-# Board utilities
-# ---------------------------------------------------------------------------
-
 def _flip_board(state: np.ndarray) -> np.ndarray:
-    """Swap channels 0/1 so the viewer always sees itself in channel 0."""
     flipped = state.copy()
     flipped[0], flipped[1] = state[1].copy(), state[0].copy()
     return flipped
 
 
-# ---------------------------------------------------------------------------
-# Greedy action wrappers
-# ---------------------------------------------------------------------------
-
 def _dqn_greedy(agent: RainbowDQN) -> Callable[[np.ndarray, list[int]], int]:
-    """Return a callable that acts greedily with a DQN agent."""
     def _act(state: np.ndarray, valid_actions: list[int]) -> int:
         return agent.online_net.get_action(state, valid_actions)
     return _act
 
 
 def _ppo_greedy(agent: PPO) -> Callable[[np.ndarray, list[int]], int]:
-    """Return a callable that acts greedily (argmax logits) with a PPO agent."""
     num_actions = agent.num_actions
     device = agent.device
 
@@ -56,17 +45,12 @@ def _ppo_greedy(agent: PPO) -> Callable[[np.ndarray, list[int]], int]:
 
 
 def _agent_greedy_fn(agent) -> Callable[[np.ndarray, list[int]], int]:
-    """Dispatch to the right greedy wrapper based on agent type."""
     if isinstance(agent, RainbowDQN):
         return _dqn_greedy(agent)
     if isinstance(agent, PPO):
         return _ppo_greedy(agent)
     raise TypeError(f"Unknown agent type: {type(agent)}")
 
-
-# ---------------------------------------------------------------------------
-# Minimax with alpha-beta pruning
-# ---------------------------------------------------------------------------
 
 def _minimax(
     env: ConnectK,
@@ -77,14 +61,7 @@ def _minimax(
     maximizing: bool,
     k: int,
 ) -> float:
-    """
-    Depth-limited minimax on a raw board array (6×7, values +1/-1/0).
-    +1 means the *minimax player* (player -1 in env terms) wins.
-
-    We work directly on a board copy to avoid resetting the live env.
-    """
-    # Check terminal: did the last move win? We check all four directions.
-    # Rather than reimplementing win detection, we look for k-in-a-row.
+    # operates on raw board arrays so we don't mess with env state during search
     def _has_won(b: np.ndarray, player: int) -> bool:
         rows, cols = b.shape
         dirs = [(0, 1), (1, 0), (1, 1), (1, -1)]
@@ -114,10 +91,8 @@ def _minimax(
                 break
         return nb
 
-    # The minimax agent is player -1 (opponent); agent is player 1 (minimizer).
-    # maximizing=True  → it's the minimax agent's turn (player -1)
-    # maximizing=False → it's the real agent's turn  (player  1)
-    minimax_player  = -1
+    # minimax agent is player -1 (maximizer), RL agent is player 1 (minimizer)
+    minimax_player   = -1
     minimizer_player = 1
 
     valid = _valid_cols(board)
@@ -152,7 +127,6 @@ def _minimax(
 
 
 def _minimax_action(env: ConnectK, board: np.ndarray, depth: int, k: int) -> int:
-    """Pick the column that maximises the minimax value for player -1."""
     def _valid_cols(b: np.ndarray) -> list[int]:
         return [c for c in range(b.shape[1]) if b[0, c] == 0]
 
@@ -175,25 +149,13 @@ def _minimax_action(env: ConnectK, board: np.ndarray, depth: int, k: int) -> int
     return best_col
 
 
-# ---------------------------------------------------------------------------
-# Head-to-head evaluation
-# ---------------------------------------------------------------------------
-
 def head_to_head(
     agent1,
     agent2,
     env: ConnectK,
     n_games: int = 200,
 ) -> dict[str, float | int]:
-    """
-    Play n_games games between agent1 and agent2.
-
-    For the first n_games//2 games agent1 goes first (player 1).
-    For the remaining games agent2 goes first (player 1).
-    Both agents play greedily.
-
-    Returns dict: agent1_wins, agent2_wins, draws, agent1_win_rate.
-    """
+    # first half: agent1 goes first; second half: agent2 goes first
     fn1 = _agent_greedy_fn(agent1)
     fn2 = _agent_greedy_fn(agent2)
 
@@ -201,7 +163,6 @@ def head_to_head(
     half = n_games // 2
 
     for game_idx in range(n_games):
-        # Alternate who goes first each half
         if game_idx < half:
             first_fn, second_fn = fn1, fn2
             first_is_agent1 = True
@@ -210,9 +171,8 @@ def head_to_head(
             first_is_agent1 = False
 
         raw_state = env.reset()
-        first_state = raw_state  # first player's perspective
-
-        winner_is_first = None  # True/False/None(draw)
+        first_state = raw_state
+        winner_is_first = None
 
         while True:
             valid = env.get_valid_actions()
@@ -235,7 +195,6 @@ def head_to_head(
 
             if done2:
                 if info2["winner"] == -1:
-                    # Second player (who is player -1) won
                     winner_is_first = False
                 elif info2["winner"] == 1:
                     winner_is_first = True
@@ -245,7 +204,6 @@ def head_to_head(
 
             first_state = _flip_board(raw_next2)
 
-        # Map winner back to agent1/agent2
         if winner_is_first is None:
             draws += 1
         elif winner_is_first == first_is_agent1:
@@ -254,16 +212,12 @@ def head_to_head(
             agent2_wins += 1
 
     return {
-        "agent1_wins":    agent1_wins,
-        "agent2_wins":    agent2_wins,
-        "draws":          draws,
+        "agent1_wins":     agent1_wins,
+        "agent2_wins":     agent2_wins,
+        "draws":           draws,
         "agent1_win_rate": agent1_wins / n_games,
     }
 
-
-# ---------------------------------------------------------------------------
-# Agent vs Minimax
-# ---------------------------------------------------------------------------
 
 def vs_minimax(
     agent,
@@ -271,12 +225,6 @@ def vs_minimax(
     depth: int = 3,
     n_games: int = 50,
 ) -> dict[str, float]:
-    """
-    Play n_games where the agent is player 1 and minimax is player -1.
-    Agent plays greedily; minimax uses alpha-beta pruning to depth `depth`.
-
-    Returns dict: win_rate, loss_rate, draw_rate.
-    """
     agent_fn = _agent_greedy_fn(agent)
     k = env.k
     wins = losses = draws = 0
@@ -299,7 +247,6 @@ def vs_minimax(
                     draws += 1
                 break
 
-            # Minimax picks a column using the raw board (player -1 maximizes)
             mm_action = _minimax_action(env, env._board.copy(), depth, k)
             raw_next2, _, done2, info2 = env.step(mm_action)
 
@@ -321,10 +268,6 @@ def vs_minimax(
     }
 
 
-# ---------------------------------------------------------------------------
-# Full evaluation suite
-# ---------------------------------------------------------------------------
-
 def _random_fn(state: np.ndarray, valid_actions: list[int]) -> int:
     return int(np.random.choice(valid_actions))
 
@@ -334,12 +277,8 @@ def run_full_eval(
     ppo_path: str,
     k: int = 4,
 ) -> dict:
-    """
-    Load both agents, run all matchups, print a results table, and save JSON.
-    """
     env = ConnectK(k=k)
 
-    # Load agents
     dqn = RainbowDQN()
     dqn.load(dqn_path)
     dqn.online_net.eval()
@@ -352,10 +291,8 @@ def run_full_eval(
     print(f"  Evaluation — Connect-{k}")
     print(f"{'='*58}")
 
-    # DQN vs random
     print("DQN vs Random (100 games)...", end=" ", flush=True)
     dqn_vs_random = vs_minimax.__wrapped__ if hasattr(vs_minimax, "__wrapped__") else None
-    # reuse head_to_head logic via a random agent wrapper
     _rand_wins = _rand_losses = _rand_draws = 0
     dqn_fn = _agent_greedy_fn(dqn)
     for _ in range(100):
@@ -380,7 +317,6 @@ def run_full_eval(
     dqn_vs_random = {"win_rate": _rand_wins/100, "loss_rate": _rand_losses/100, "draw_rate": _rand_draws/100}
     print(f"W={dqn_vs_random['win_rate']:.0%} L={dqn_vs_random['loss_rate']:.0%} D={dqn_vs_random['draw_rate']:.0%}")
 
-    # PPO vs random
     print("PPO vs Random (100 games)...", end=" ", flush=True)
     _rand_wins = _rand_losses = _rand_draws = 0
     ppo_fn = _agent_greedy_fn(ppo)
@@ -406,32 +342,27 @@ def run_full_eval(
     ppo_vs_random = {"win_rate": _rand_wins/100, "loss_rate": _rand_losses/100, "draw_rate": _rand_draws/100}
     print(f"W={ppo_vs_random['win_rate']:.0%} L={ppo_vs_random['loss_rate']:.0%} D={ppo_vs_random['draw_rate']:.0%}")
 
-    # DQN vs minimax
     print("DQN vs Minimax depth=3 (50 games)...", end=" ", flush=True)
     dqn_vs_mm = vs_minimax(dqn, env, depth=3, n_games=50)
     print(f"W={dqn_vs_mm['win_rate']:.0%} L={dqn_vs_mm['loss_rate']:.0%} D={dqn_vs_mm['draw_rate']:.0%}")
 
-    # PPO vs minimax
     print("PPO vs Minimax depth=3 (50 games)...", end=" ", flush=True)
     ppo_vs_mm = vs_minimax(ppo, env, depth=3, n_games=50)
     print(f"W={ppo_vs_mm['win_rate']:.0%} L={ppo_vs_mm['loss_rate']:.0%} D={ppo_vs_mm['draw_rate']:.0%}")
 
-    # DQN vs PPO head-to-head
     print("DQN vs PPO head-to-head (200 games)...", end=" ", flush=True)
     h2h = head_to_head(dqn, ppo, env, n_games=200)
     print(f"DQN wins={h2h['agent1_wins']} PPO wins={h2h['agent2_wins']} Draws={h2h['draws']}")
 
-    # Print summary table
     print(f"\n{'='*58}")
     print(f"  {'Matchup':<30} {'Win':>6} {'Loss':>6} {'Draw':>6}")
     print(f"  {'-'*48}")
     def _row(label, d):
         print(f"  {label:<30} {d['win_rate']:>5.1%} {d['loss_rate']:>6.1%} {d['draw_rate']:>6.1%}")
-    _row("DQN vs Random",     dqn_vs_random)
-    _row("PPO vs Random",     ppo_vs_random)
-    _row("DQN vs Minimax-3",  dqn_vs_mm)
-    _row("PPO vs Minimax-3",  ppo_vs_mm)
-    # Head-to-head from DQN's perspective
+    _row("DQN vs Random",       dqn_vs_random)
+    _row("PPO vs Random",       ppo_vs_random)
+    _row("DQN vs Minimax-3",    dqn_vs_mm)
+    _row("PPO vs Minimax-3",    ppo_vs_mm)
     h2h_rates = {
         "win_rate":  h2h["agent1_wins"] / 200,
         "loss_rate": h2h["agent2_wins"] / 200,
@@ -441,15 +372,15 @@ def run_full_eval(
     print(f"{'='*58}\n")
 
     results = {
-        "k":            k,
-        "dqn_vs_random": dqn_vs_random,
-        "ppo_vs_random": ppo_vs_random,
+        "k":               k,
+        "dqn_vs_random":   dqn_vs_random,
+        "ppo_vs_random":   ppo_vs_random,
         "dqn_vs_minimax3": dqn_vs_mm,
         "ppo_vs_minimax3": ppo_vs_mm,
-        "dqn_vs_ppo":    {
-            "agent1_wins":    h2h["agent1_wins"],
-            "agent2_wins":    h2h["agent2_wins"],
-            "draws":          h2h["draws"],
+        "dqn_vs_ppo": {
+            "agent1_wins":     h2h["agent1_wins"],
+            "agent2_wins":     h2h["agent2_wins"],
+            "draws":           h2h["draws"],
             "agent1_win_rate": h2h["agent1_win_rate"],
         },
     }
@@ -462,16 +393,12 @@ def run_full_eval(
     return results
 
 
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
-
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Evaluate DQN and PPO agents on Connect-K")
-    parser.add_argument("--dqn",  required=True, help="Path to DQN checkpoint")
-    parser.add_argument("--ppo",  required=True, help="Path to PPO checkpoint")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dqn",  required=True)
+    parser.add_argument("--ppo",  required=True)
     parser.add_argument("--k",    type=int, default=4)
     args = parser.parse_args()
 
