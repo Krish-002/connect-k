@@ -86,10 +86,11 @@ class DuelingDQN(nn.Module):
 
     @torch.no_grad()
     def get_action(self, state: np.ndarray, valid_actions: list[int]) -> int:
-        x = torch.from_numpy(state).float().unsqueeze(0)
+        device = next(self.parameters()).device
+        x = torch.from_numpy(state).float().unsqueeze(0).to(device)
         q = self.forward(x).squeeze(0)
 
-        mask = torch.full((self.num_actions,), -1e9)
+        mask = torch.full((self.num_actions,), -1e9, device=device)
         mask[valid_actions] = 0.0
         q = q + mask
 
@@ -109,11 +110,12 @@ class ActorCritic(nn.Module):
 
     @torch.no_grad()
     def get_action(self, state: np.ndarray, valid_actions: list[int]) -> int:
-        x = torch.from_numpy(state).float().unsqueeze(0)
+        device = next(self.parameters()).device
+        x = torch.from_numpy(state).float().unsqueeze(0).to(device)
         logits, _ = self.forward(x)
         logits = logits.squeeze(0)
 
-        mask = torch.full((self.num_actions,), -1e9)
+        mask = torch.full((self.num_actions,), -1e9, device=device)
         mask[valid_actions] = 0.0
         logits = logits + mask
 
