@@ -1,0 +1,35 @@
+[
+  {
+    "episode": 20,
+    "epsilon": 0.99,
+    "avg_loss": 0.083956,
+    "train_win": 0.5,
+    "train_loss": 0.5,
+    "train_draw": 0.0,
+    "win_rate": 0.88,
+    "loss_rate": 0.12,
+    "draw_rate": 0.0
+  },
+  {
+    "episode": 40,
+    "epsilon": 0.9802,
+    "avg_loss": 0.109806,
+    "train_win": 0.45,
+    "train_loss": 0.55,
+    "train_draw": 0.0,
+    "win_rate": 0.9,
+    "loss_rate": 0.1,
+    "draw_rate": 0.0
+  },
+  {
+    "episode": 60,
+    "epsilon": 0.9704,
+    "avg_loss": 0.1096,
+    "train_win": 0.2,
+    "train_loss": 0.8,
+    "train_draw": 0.0,
+    "win_rate": 0.82,
+    "loss_rate": 0.16,
+    "draw_rate": 0.02
+  }
+]
