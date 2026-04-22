@@ -1,54 +1,20 @@
-% ── Primary algorithm references ─────────────────────────────────────────────
-
-@article{mnih2015humanlevel,
-  author    = {Mnih, Volodymyr and Kavukcuoglu, Koray and Silver, David and
-               Rusu, Andrei A and Veness, Joel and Bellemare, Marc G and
-               Graves, Alex and Riedmiller, Martin and Fidjeland, Andreas K and
-               Ostrovski, Georg and others},
-  title     = {Human-level control through deep reinforcement learning},
-  journal   = {Nature},
-  volume    = {518},
-  number    = {7540},
-  pages     = {529--533},
-  year      = {2015},
-  publisher = {Nature Publishing Group},
+@book{sutton2018rl,
+  author    = {Sutton, Richard S. and Barto, Andrew G.},
+  title     = {Reinforcement Learning: An Introduction},
+  edition   = {2nd},
+  publisher = {MIT Press},
+  year      = {2018},
+  url       = {http://incompleteideas.net/book/the-book-2nd.html}
 }
 
-@inproceedings{wang2016dueling,
-  author    = {Wang, Ziyu and Schaul, Tom and Hessel, Matteo and
-               Hasselt, Hado and Lanctot, Marc and de Freitas, Nando},
-  title     = {Dueling Network Architectures for Deep Reinforcement Learning},
-  booktitle = {Proceedings of the 33rd International Conference on Machine
-               Learning (ICML)},
-  pages     = {1995--2003},
-  year      = {2016},
-}
-
-@inproceedings{schaul2016prioritized,
-  author    = {Schaul, Tom and Quan, John and Antonoglou, Ioannis and Silver, David},
-  title     = {Prioritized Experience Replay},
-  booktitle = {Proceedings of the 4th International Conference on Learning
-               Representations (ICLR)},
-  year      = {2016},
-}
-
-@inproceedings{hasselt2016double,
-  author    = {van Hasselt, Hado and Guez, Arthur and Silver, David},
-  title     = {Deep Reinforcement Learning with Double {Q}-learning},
-  booktitle = {Proceedings of the 30th AAAI Conference on Artificial
-               Intelligence},
-  pages     = {2094--2100},
-  year      = {2016},
-}
-
-@article{hessel2018rainbow,
+@inproceedings{hessel2018rainbow,
   author    = {Hessel, Matteo and Modayil, Joseph and van Hasselt, Hado and
                Schaul, Tom and Ostrovski, Georg and Dabney, Will and
                Horgan, Dan and Piot, Bilal and Azar, Mohammad and Silver, David},
   title     = {Rainbow: Combining Improvements in Deep Reinforcement Learning},
-  journal   = {Proceedings of the 32nd AAAI Conference on Artificial Intelligence},
+  booktitle = {Proceedings of the 32nd AAAI Conference on Artificial Intelligence},
   pages     = {3215--3222},
-  year      = {2018},
+  year      = {2018}
 }
 
 @article{schulman2017ppo,
@@ -56,151 +22,247 @@
                Radford, Alec and Klimov, Oleg},
   title     = {Proximal Policy Optimization Algorithms},
   journal   = {arXiv preprint arXiv:1707.06347},
-  year      = {2017},
+  year      = {2017}
 }
 
-@article{schulman2015gae,
-  author    = {Schulman, John and Moritz, Philipp and Levine, Sergey and
-               Jordan, Michael and Abbeel, Pieter},
-  title     = {High-Dimensional Continuous Control Using Generalized Advantage
-               Estimation},
-  journal   = {arXiv preprint arXiv:1506.02438},
-  year      = {2015},
-}
-
-@article{sutton2000policy,
-  author    = {Sutton, Richard S and McAllester, David and Singh, Satinder and
-               Mansour, Yishay},
-  title     = {Policy Gradient Methods for Reinforcement Learning with Function
-               Approximation},
-  journal   = {Advances in Neural Information Processing Systems},
-  volume    = {12},
-  year      = {2000},
-}
-
-% ── Self-play and game-playing agents ─────────────────────────────────────────
-
-@article{silver2016alphago,
-  author    = {Silver, David and Huang, Aja and Maddison, Chris J and
-               Guez, Arthur and Sifre, Laurent and van den Driessche, George and
-               Schrittwieser, Julian and Antonoglou, Ioannis and
-               Panneershelvam, Veda and Lanctot, Marc and others},
-  title     = {Mastering the game of {Go} with deep neural networks and tree
-               search},
+@article{mnih2015dqn,
+  author    = {Mnih, Volodymyr and Kavukcuoglu, Koray and Silver, David and
+               Rusu, Andrei A. and Veness, Joel and Bellemare, Marc G. and
+               Graves, Alex and Riedmiller, Martin and Fidjeland, Andreas K. and
+               Ostrovski, Georg and Petersen, Stig and Beattie, Charles and
+               Sadik, Amir and Antonoglou, Ioannis and King, Helen and
+               Kumaran, Dharshan and Wierstra, Daan and Legg, Shane and
+               Hassabis, Demis},
+  title     = {Human-Level Control through Deep Reinforcement Learning},
   journal   = {Nature},
-  volume    = {529},
-  number    = {7587},
-  pages     = {484--489},
-  year      = {2016},
-}
-
-@article{silver2018alphazero,
-  author    = {Silver, David and Hubert, Thomas and Schrittwieser, Julian and
-               Antonoglou, Ioannis and Lai, Matthew and Guez, Arthur and
-               Lanctot, Marc and Sifre, Laurent and Kumaran, Dharshan and
-               Graepel, Thore and others},
-  title     = {A general reinforcement learning algorithm that masters chess,
-               shogi, and {Go} through self-play},
-  journal   = {Science},
-  volume    = {362},
-  number    = {6419},
-  pages     = {1140--1144},
-  year      = {2018},
-}
-
-@article{tesauro1995tdgammon,
-  author    = {Tesauro, Gerald},
-  title     = {Temporal Difference Learning and {TD-Gammon}},
-  journal   = {Communications of the ACM},
-  volume    = {38},
-  number    = {3},
-  pages     = {58--68},
-  year      = {1995},
-}
-
-@inproceedings{heinrich2016neuralFSP,
-  author    = {Heinrich, Johannes and Silver, David},
-  title     = {Deep Reinforcement Learning from Self-Play in Imperfect-Information
-               Games},
-  booktitle = {Workshop on Deep Reinforcement Learning, NIPS},
-  year      = {2016},
-}
-
-% ── Classical game AI ─────────────────────────────────────────────────────────
-
-@article{allis1994connect4,
-  author    = {Allis, Louis Victor},
-  title     = {Searching for Solutions in Games and Artificial Intelligence},
-  journal   = {PhD Thesis, Maastricht University},
-  year      = {1994},
-}
-
-@inproceedings{tromp1995connectfour,
-  author    = {Tromp, John},
-  title     = {Connect-4 is Solved!},
-  booktitle = {CG-1995 Workshop in Game-Tree Search},
-  year      = {1995},
-}
-
-@article{browne2012mcts,
-  author    = {Browne, Cameron B and Powley, Edward and Whitehouse, Daniel and
-               Lucas, Simon M and Cowling, Peter I and Rohlfshagen, Philipp and
-               Tavener, Stephen and Perez, Diego and Samothrakis, Spyridon and
-               Colton, Simon},
-  title     = {A Survey of {Monte Carlo} Tree Search Methods},
-  journal   = {IEEE Transactions on Computational Intelligence and AI in Games},
-  volume    = {4},
-  number    = {1},
-  pages     = {1--43},
-  year      = {2012},
-}
-
-% ── Deep learning and RL foundations ─────────────────────────────────────────
-
-@book{sutton2018rl,
-  author    = {Sutton, Richard S and Barto, Andrew G},
-  title     = {Reinforcement Learning: An Introduction},
-  edition   = {2nd},
-  publisher = {MIT Press},
-  year      = {2018},
-}
-
-@article{lecun2015deeplearning,
-  author    = {LeCun, Yann and Bengio, Yoshua and Hinton, Geoffrey},
-  title     = {Deep learning},
-  journal   = {Nature},
-  volume    = {521},
-  number    = {7553},
-  pages     = {436--444},
+  volume    = {518},
+  number    = {7540},
+  pages     = {529--533},
   year      = {2015},
+  doi       = {10.1038/nature14236}
 }
 
 @article{mnih2013dqn,
   author    = {Mnih, Volodymyr and Kavukcuoglu, Koray and Silver, David and
                Graves, Alex and Antonoglou, Ioannis and Wierstra, Daan and
                Riedmiller, Martin},
-  title     = {Playing {Atari} with Deep Reinforcement Learning},
+  title     = {Playing Atari with Deep Reinforcement Learning},
   journal   = {arXiv preprint arXiv:1312.5602},
-  year      = {2013},
+  year      = {2013}
+}
+
+@inproceedings{hasselt2016double,
+  author    = {van Hasselt, Hado and Guez, Arthur and Silver, David},
+  title     = {Deep Reinforcement Learning with Double {Q}-Learning},
+  booktitle = {Proceedings of the 30th AAAI Conference on Artificial Intelligence},
+  pages     = {2094--2100},
+  year      = {2016}
+}
+
+@inproceedings{wang2016dueling,
+  author    = {Wang, Ziyu and Schaul, Tom and Hessel, Matteo and
+               Hasselt, Hado and Lanctot, Marc and Freitas, Nando},
+  title     = {Dueling Network Architectures for Deep Reinforcement Learning},
+  booktitle = {Proceedings of the 33rd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {48},
+  pages     = {1995--2003},
+  year      = {2016},
+  publisher = {PMLR}
+}
+
+@inproceedings{schaul2016per,
+  author    = {Schaul, Tom and Quan, John and Antonoglou, Ioannis and Silver, David},
+  title     = {Prioritized Experience Replay},
+  booktitle = {Proceedings of the 4th International Conference on Learning Representations},
+  year      = {2016},
+  note      = {arXiv:1511.05952}
+}
+
+@inproceedings{schulman2015gae,
+  author    = {Schulman, John and Moritz, Philipp and Levine, Sergey and
+               Jordan, Michael I. and Abbeel, Pieter},
+  title     = {High-Dimensional Continuous Control Using Generalized Advantage Estimation},
+  booktitle = {Proceedings of the 4th International Conference on Learning Representations},
+  year      = {2016},
+  note      = {arXiv:1506.02438}
 }
 
 @inproceedings{mnih2016a3c,
-  author    = {Mnih, Volodymyr and Badia, Adria Puigdom{\`e}nech and
-               Mirza, Mehdi and Graves, Alex and Lillicrap, Timothy and
+  author    = {Mnih, Volodymyr and Badia, Adri{\`a} Puigdom{\`e}nech and
+               Mirza, Mehdi and Graves, Alex and Lillicrap, Timothy P. and
                Harley, Tim and Silver, David and Kavukcuoglu, Koray},
   title     = {Asynchronous Methods for Deep Reinforcement Learning},
-  booktitle = {Proceedings of the 33rd International Conference on Machine
-               Learning (ICML)},
+  booktitle = {Proceedings of the 33rd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {48},
   pages     = {1928--1937},
   year      = {2016},
+  publisher = {PMLR}
+}
+
+@article{silver2016alphago,
+  author    = {Silver, David and Huang, Aja and Maddison, Chris J. and
+               Guez, Arthur and Sifre, Laurent and van den Driessche, George and
+               Schrittwieser, Julian and Antonoglou, Ioannis and
+               Panneershelvam, Veda and Lanctot, Marc and Dieleman, Sander and
+               Grewe, Dominik and Nham, John and Kalchbrenner, Nal and
+               Sutskever, Ilya and Lillicrap, Timothy and Leach, Madeleine and
+               Kavukcuoglu, Koray and Graepel, Thore and Hassabis, Demis},
+  title     = {Mastering the Game of {Go} with Deep Neural Networks and Tree Search},
+  journal   = {Nature},
+  volume    = {529},
+  number    = {7587},
+  pages     = {484--489},
+  year      = {2016},
+  doi       = {10.1038/nature16961}
+}
+
+@article{silver2017alphagozero,
+  author    = {Silver, David and Schrittwieser, Julian and Simonyan, Karen and
+               Antonoglou, Ioannis and Huang, Aja and Guez, Arthur and
+               Hubert, Thomas and Baker, Lucas and Lai, Matthew and Bolton, Adrian and
+               Chen, Yutian and Lillicrap, Timothy and Hui, Fan and Sifre, Laurent and
+               van den Driessche, George and Graepel, Thore and Hassabis, Demis},
+  title     = {Mastering the Game of {Go} without Human Knowledge},
+  journal   = {Nature},
+  volume    = {550},
+  number    = {7676},
+  pages     = {354--359},
+  year      = {2017},
+  doi       = {10.1038/nature24270}
+}
+
+@article{silver2018alphazero,
+  author    = {Silver, David and Hubert, Thomas and Schrittwieser, Julian and
+               Antonoglou, Ioannis and Lai, Matthew and Guez, Arthur and
+               Lanctot, Marc and Sifre, Laurent and Kumaran, Dharshan and
+               Graepel, Thore and Lillicrap, Timothy and Simonyan, Karen and
+               Hassabis, Demis},
+  title     = {A General Reinforcement Learning Algorithm that Masters Chess,
+               Shogi, and {Go} through Self-Play},
+  journal   = {Science},
+  volume    = {362},
+  number    = {6419},
+  pages     = {1140--1144},
+  year      = {2018},
+  doi       = {10.1126/science.aar6404}
+}
+
+@article{allis1994connect4,
+  author    = {Allis, Victor},
+  title     = {A Knowledge-Based Approach of {Connect-Four}},
+  journal   = {ICCA Journal},
+  volume    = {11},
+  number    = {4},
+  pages     = {165--166},
+  year      = {1988},
+  note      = {Master's thesis, Vrije Universiteit, 1988}
+}
+
+@misc{tromp1995connectfour,
+  author    = {Tromp, John},
+  title     = {{Connect-4} Data Set},
+  year      = {1995},
+  howpublished = {\url{https://tromp.github.io/c4/c4.html}}
+}
+
+@article{knuth1975alphabeta,
+  author    = {Knuth, Donald E. and Moore, Ronald W.},
+  title     = {An Analysis of Alpha-Beta Pruning},
+  journal   = {Artificial Intelligence},
+  volume    = {6},
+  number    = {4},
+  pages     = {293--326},
+  year      = {1975},
+  doi       = {10.1016/0004-3702(75)90019-3}
+}
+
+@article{tesauro1995tdgammon,
+  author    = {Tesauro, Gerald},
+  title     = {{TD-Gammon}, a Self-Teaching Backgammon Program, Achieves
+               Master-Level Play},
+  journal   = {Neural Computation},
+  volume    = {6},
+  number    = {2},
+  pages     = {215--219},
+  year      = {1994},
+  doi       = {10.1162/neco.1994.6.2.215}
 }
 
 @article{watkins1992qlearning,
-  author    = {Watkins, Christopher J C H and Dayan, Peter},
-  title     = {Q-learning},
+  author    = {Watkins, Christopher J. C. H. and Dayan, Peter},
+  title     = {Q-Learning},
   journal   = {Machine Learning},
   volume    = {8},
   number    = {3--4},
   pages     = {279--292},
   year      = {1992},
+  doi       = {10.1007/BF00992698}
+}
+
+@inproceedings{sutton2000policy,
+  author    = {Sutton, Richard S. and McAllester, David and Singh, Satinder
+               and Mansour, Yishay},
+  title     = {Policy Gradient Methods for Reinforcement Learning with
+               Function Approximation},
+  booktitle = {Advances in Neural Information Processing Systems 12},
+  pages     = {1057--1063},
+  year      = {2000},
+  publisher = {MIT Press}
+}
+
+@inproceedings{heinrich2016neuralFSP,
+  author    = {Heinrich, Johannes and Silver, David},
+  title     = {Deep Reinforcement Learning from Self-Play in
+               Imperfect-Information Games},
+  booktitle = {NIPS Deep Reinforcement Learning Workshop},
+  year      = {2016},
+  note      = {arXiv:1603.01121}
+}
+
+@inproceedings{kingma2015adam,
+  author    = {Kingma, Diederik P. and Ba, Jimmy},
+  title     = {Adam: A Method for Stochastic Optimization},
+  booktitle = {Proceedings of the 3rd International Conference on Learning Representations},
+  year      = {2015},
+  note      = {arXiv:1412.6980}
+}
+
+@inproceedings{paszke2019pytorch,
+  author    = {Paszke, Adam and Gross, Sam and Massa, Francisco and
+               Lerer, Adam and Bradbury, James and Chanan, Gregory and
+               Killeen, Trevor and Lin, Zeming and Gimelshein, Natalia and
+               Antiga, Luca and Desmaison, Alban and K{\"o}pf, Andreas and
+               Yang, Edward and DeVito, Zachary and Raison, Martin and
+               Tejani, Alykhan and Chilamkurthy, Sasank and Steiner, Benoit and
+               Fang, Lu and Bai, Junjie and Chintala, Soumith},
+  title     = {{PyTorch}: An Imperative Style, High-Performance Deep Learning Library},
+  booktitle = {Advances in Neural Information Processing Systems 32},
+  pages     = {8024--8035},
+  year      = {2019}
+}
+
+@article{williams1992reinforce,
+  author    = {Williams, Ronald J.},
+  title     = {Simple Statistical Gradient-Following Algorithms for
+               Connectionist Reinforcement Learning},
+  journal   = {Machine Learning},
+  volume    = {8},
+  number    = {3--4},
+  pages     = {229--256},
+  year      = {1992},
+  doi       = {10.1007/BF00992696}
+}
+
+@article{lin1992experience,
+  author    = {Lin, Long-Ji},
+  title     = {Self-Improving Reactive Agents Based on Reinforcement Learning,
+               Planning and Teaching},
+  journal   = {Machine Learning},
+  volume    = {8},
+  number    = {3--4},
+  pages     = {293--321},
+  year      = {1992},
+  doi       = {10.1007/BF00992699}
 }

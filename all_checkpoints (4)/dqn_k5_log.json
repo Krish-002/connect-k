@@ -1,0 +1,222 @@
+[
+  {
+    "episode": 250,
+    "epsilon": 0.8825,
+    "avg_loss": 0.039313,
+    "train_win": 0.384,
+    "train_loss": 0.388,
+    "train_draw": 0.228,
+    "win_rate": 0.79,
+    "loss_rate": 0.2,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 500,
+    "epsilon": 0.7788,
+    "avg_loss": 0.032678,
+    "train_win": 0.48,
+    "train_loss": 0.348,
+    "train_draw": 0.172,
+    "win_rate": 0.84,
+    "loss_rate": 0.16,
+    "draw_rate": 0.0
+  },
+  {
+    "episode": 750,
+    "epsilon": 0.6872,
+    "avg_loss": 0.030457,
+    "train_win": 0.376,
+    "train_loss": 0.616,
+    "train_draw": 0.008,
+    "win_rate": 0.88,
+    "loss_rate": 0.11,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 1000,
+    "epsilon": 0.6065,
+    "avg_loss": 0.027621,
+    "train_win": 0.42,
+    "train_loss": 0.556,
+    "train_draw": 0.024,
+    "win_rate": 0.94,
+    "loss_rate": 0.06,
+    "draw_rate": 0.0
+  },
+  {
+    "episode": 1250,
+    "epsilon": 0.5352,
+    "avg_loss": 0.033458,
+    "train_win": 0.432,
+    "train_loss": 0.532,
+    "train_draw": 0.036,
+    "win_rate": 0.89,
+    "loss_rate": 0.09,
+    "draw_rate": 0.02
+  },
+  {
+    "episode": 1500,
+    "epsilon": 0.4723,
+    "avg_loss": 0.030789,
+    "train_win": 0.604,
+    "train_loss": 0.38,
+    "train_draw": 0.016,
+    "win_rate": 0.91,
+    "loss_rate": 0.08,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 1750,
+    "epsilon": 0.4168,
+    "avg_loss": 0.030673,
+    "train_win": 0.332,
+    "train_loss": 0.616,
+    "train_draw": 0.052,
+    "win_rate": 0.91,
+    "loss_rate": 0.08,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 2000,
+    "epsilon": 0.3678,
+    "avg_loss": 0.027025,
+    "train_win": 0.508,
+    "train_loss": 0.444,
+    "train_draw": 0.048,
+    "win_rate": 0.94,
+    "loss_rate": 0.04,
+    "draw_rate": 0.02
+  },
+  {
+    "episode": 2250,
+    "epsilon": 0.3246,
+    "avg_loss": 0.02787,
+    "train_win": 0.528,
+    "train_loss": 0.44,
+    "train_draw": 0.032,
+    "win_rate": 0.91,
+    "loss_rate": 0.07,
+    "draw_rate": 0.02
+  },
+  {
+    "episode": 2500,
+    "epsilon": 0.2864,
+    "avg_loss": 0.025057,
+    "train_win": 0.62,
+    "train_loss": 0.328,
+    "train_draw": 0.052,
+    "win_rate": 0.92,
+    "loss_rate": 0.07,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 2750,
+    "epsilon": 0.2528,
+    "avg_loss": 0.02442,
+    "train_win": 0.664,
+    "train_loss": 0.3,
+    "train_draw": 0.036,
+    "win_rate": 0.97,
+    "loss_rate": 0.02,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 3000,
+    "epsilon": 0.223,
+    "avg_loss": 0.022034,
+    "train_win": 0.504,
+    "train_loss": 0.464,
+    "train_draw": 0.032,
+    "win_rate": 0.94,
+    "loss_rate": 0.04,
+    "draw_rate": 0.02
+  },
+  {
+    "episode": 3250,
+    "epsilon": 0.1968,
+    "avg_loss": 0.021603,
+    "train_win": 0.644,
+    "train_loss": 0.308,
+    "train_draw": 0.048,
+    "win_rate": 0.96,
+    "loss_rate": 0.03,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 3500,
+    "epsilon": 0.1737,
+    "avg_loss": 0.019368,
+    "train_win": 0.292,
+    "train_loss": 0.652,
+    "train_draw": 0.056,
+    "win_rate": 0.93,
+    "loss_rate": 0.02,
+    "draw_rate": 0.05
+  },
+  {
+    "episode": 3750,
+    "epsilon": 0.1533,
+    "avg_loss": 0.018949,
+    "train_win": 0.524,
+    "train_loss": 0.34,
+    "train_draw": 0.136,
+    "win_rate": 0.92,
+    "loss_rate": 0.02,
+    "draw_rate": 0.06
+  },
+  {
+    "episode": 4000,
+    "epsilon": 0.1353,
+    "avg_loss": 0.018021,
+    "train_win": 0.38,
+    "train_loss": 0.356,
+    "train_draw": 0.264,
+    "win_rate": 0.95,
+    "loss_rate": 0.02,
+    "draw_rate": 0.03
+  },
+  {
+    "episode": 4250,
+    "epsilon": 0.1194,
+    "avg_loss": 0.016498,
+    "train_win": 0.332,
+    "train_loss": 0.324,
+    "train_draw": 0.344,
+    "win_rate": 0.99,
+    "loss_rate": 0.0,
+    "draw_rate": 0.01
+  },
+  {
+    "episode": 4500,
+    "epsilon": 0.1053,
+    "avg_loss": 0.014975,
+    "train_win": 0.368,
+    "train_loss": 0.388,
+    "train_draw": 0.244,
+    "win_rate": 0.93,
+    "loss_rate": 0.03,
+    "draw_rate": 0.04
+  },
+  {
+    "episode": 4750,
+    "epsilon": 0.093,
+    "avg_loss": 0.015023,
+    "train_win": 0.256,
+    "train_loss": 0.532,
+    "train_draw": 0.212,
+    "win_rate": 0.96,
+    "loss_rate": 0.02,
+    "draw_rate": 0.02
+  },
+  {
+    "episode": 5000,
+    "epsilon": 0.082,
+    "avg_loss": 0.014359,
+    "train_win": 0.568,
+    "train_loss": 0.26,
+    "train_draw": 0.172,
+    "win_rate": 0.94,
+    "loss_rate": 0.04,
+    "draw_rate": 0.02
+  }
+]

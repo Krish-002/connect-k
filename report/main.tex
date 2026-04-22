@@ -77,6 +77,12 @@
        Proximal Policy Optimization}}
 
 \author{%
+  Sreekar Patti\\
+  Khoury College of Computer Sciences\\
+  Northeastern University\\
+  Boston, MA 02115\\
+  \texttt{patti.sr@northeastern.edu}
+  \and
   Krish Bansal\\
   Khoury College of Computer Sciences\\
   Northeastern University\\
@@ -102,26 +108,27 @@
 % ─────────────────────────────────────────────────────────────────────────────
 \begin{abstract}
 We present a systematic comparison of two deep reinforcement learning
-paradigms---Rainbow DQN (value-based, off-policy) and Proximal Policy
-Optimization (PPO, policy-based, on-policy)---applied to
+approaches, Rainbow DQN (value-based, off-policy) and Proximal Policy
+Optimization (PPO, policy-based, on-policy), applied to
 Connect-\textit{K}, a parametric generalization of Connect Four played
 on a $6{\times}7$ board where aligning $k$ consecutive pieces in any
 direction wins the game.  Both agents share a convolutional neural
 network encoder and are trained from scratch using a two-phase
 curriculum: an initial random-opponent phase followed by frozen
-self-play, which provides competitive pressure without causing policy
-collapse.  We evaluate agents at three difficulty settings ($k \in
+self-play.  We evaluate agents at three difficulty settings ($k \in
 \{4,5,6\}$) against a uniform-random baseline and a depth-3 minimax
 search, as well as in direct head-to-head competition.  On standard
-Connect-4 ($k{=}4$), Rainbow DQN achieves \textbf{87\%} win rate
-against random play and \textbf{44\%} against the minimax baseline,
-while PPO reaches \textbf{79\%} and \textbf{36\%} respectively.  DQN
-wins \textbf{55\%} of head-to-head games and degrades more gracefully as
-$k$ increases.  PPO exhibits smoother but slower training dynamics.  Our
-results show that off-policy sample reuse, prioritized replay, and
-multi-step bootstrapping collectively give Rainbow DQN a tangible
-tactical advantage over PPO's on-policy clipped surrogate objective in
-this adversarial, structured-board domain.
+Connect-4 ($k{=}4$), Rainbow DQN achieves \textbf{96\%} win rate
+against random play while PPO reaches \textbf{72\%}.  In head-to-head
+play, DQN wins \textbf{100\%} of games against PPO across all $k$
+values.  Critically, \emph{neither agent wins a single game against the
+depth-3 minimax baseline}, exposing a fundamental gap between
+pattern-matching neural policies and even shallow lookahead search.  PPO
+also exhibits a sharp training collapse near the end of its run, which
+we attribute to self-play instability.  Our results highlight the
+strength of off-policy sample reuse for adversarial board games, while
+also pointing to the limitations of model-free RL without explicit
+lookahead.
 \end{abstract}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -129,8 +136,8 @@ this adversarial, structured-board domain.
 \label{sec:intro}
 
 Board games have long served as canonical benchmarks for artificial
-intelligence, from Shannon's \citeyear{allis1994connect4} theoretical
-analysis of chess to AlphaGo's landmark defeat of world champions
+intelligence, from early work on game-tree search and minimax analysis
+\citep{knuth1975alphabeta} to AlphaGo's landmark defeat of world champions
 \citep{silver2016alphago}.  Their fully observable, deterministic
 dynamics make them attractive test-beds: difficulty can be tuned
 precisely, ground-truth optimal play is sometimes known, and progress is
@@ -138,8 +145,8 @@ easy to measure.
 
 Connect-\textit{K} is the class of two-player zero-sum games played on a
 $6{\times}7$ board with gravity-obeying column drops, where the first
-player to form $k$ consecutive pieces---horizontally, vertically, or
-diagonally---wins.  The special case $k{=}4$ is the classic
+player to form $k$ consecutive pieces (horizontally, vertically, or
+diagonally) wins.  The special case $k{=}4$ is the classic
 \emph{Connect Four}, which was fully solved by \citet{tromp1995connectfour}
 and \citet{allis1994connect4}: with optimal play, the first player
 always wins.  By varying $k$, we obtain a family of games with identical
@@ -192,11 +199,12 @@ Our main contributions are:
 \begin{itemize}
   \item A clean, reproducible implementation of both algorithms on a
   shared Connect-$k$ environment with curriculum self-play.
-  \item A systematic comparison on three difficulty levels ($k \in
-  \{4, 5, 6\}$), including evaluations against a random baseline and a
-  minimax search.
-  \item Quantitative analysis of training dynamics, sample efficiency,
-  and the impact of the self-play curriculum.
+  \item A systematic empirical comparison on three difficulty levels
+  ($k \in \{4, 5, 6\}$), including evaluations against a random
+  baseline, a minimax search, and each other.
+  \item An analysis of training dynamics that reveals PPO's instability
+  under self-play and the failure of both model-free agents against a
+  shallow lookahead baseline.
 \end{itemize}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -234,13 +242,13 @@ decision.
 
 Q-learning \citep{watkins1992qlearning} estimates the optimal
 action-value function $Q^*(s,a) = \E\bigl[r + \gamma \max_{a'} Q^*(s',a')
-\bigm| s, a\bigr]$ from experience.  \citet{mnih2013dqn} showed that
+\bigm| s, a\bigr]$ from experience.  \citet{mnih2015dqn} showed that
 parameterising $Q$ with a deep neural network $Q_\theta$ and updating it
 via stochastic gradient descent on the Bellman residual enables
 human-level play on Atari games.  A fixed \emph{target network}
 $Q_{\theta^-}$, periodically copied from $Q_\theta$, stabilises training.
-An experience \emph{replay buffer} breaks temporal correlations by
-training on randomly sampled past transitions.
+An experience \emph{replay buffer} \citep{lin1992experience} breaks
+temporal correlations by training on randomly sampled past transitions.
 
 \subsection{Policy Gradient Methods}
 
@@ -281,8 +289,8 @@ hand-crafted features.
 AlphaGo \citep{silver2016alphago} combined deep convolutional networks
 with Monte Carlo Tree Search (MCTS) and supervised pretraining to defeat
 world champions at Go.  AlphaZero \citep{silver2018alphazero}
-subsequently showed that self-play alone---without human priors---suffices
-across Go, chess, and shogi.  MCTS provides a principled, lookahead-based
+subsequently showed that self-play alone, without any human priors, was
+sufficient across Go, chess, and shogi.  MCTS provides a principled, lookahead-based
 search that dramatically improves policy quality at inference time.  We
 deliberately exclude MCTS to isolate the learning algorithms themselves
 and to maintain tractable training times on commodity hardware.
@@ -315,7 +323,7 @@ $s \in \{0,1\}^{3 \times 6 \times 7}$:
   \item \textbf{Channel 0:} Binary map of the \emph{current player's}
   pieces.
   \item \textbf{Channel 1:} Binary map of the \emph{opponent's} pieces.
-  \item \textbf{Channel 2:} Binary valid-move mask---1 where column $c$
+  \item \textbf{Channel 2:} Binary valid-move mask: 1 where column $c$
   is not full (equivalently, $\text{board}[0,c] = 0$).
 \end{itemize}
 
@@ -397,7 +405,8 @@ The Double DQN target \citep{hasselt2016double} decouples action
 This corrects the maximisation bias inherent in vanilla DQN.
 
 \subsubsection{Prioritized Experience Replay.}
-Transitions are stored in a binary sum-tree with priority
+Following \citet{schaul2016per}, transitions are stored in a binary
+sum-tree with priority
 \begin{equation}
   p_i = (|\delta_i| + \epsilon_{\text{PER}})^\alpha,
   \label{eq:per_priority}
@@ -534,8 +543,8 @@ uniformly among valid columns.  This warm-up phase allows the agent to
 discover basic tactics (blocking open columns, creating threats) without
 the instability of self-play against an untrained policy.
 
-After a fixed threshold---episode 500 for DQN (10\% of total training)
-and step 50\,000 for PPO (also 10\%)---the opponent is replaced with a
+After a fixed threshold (episode 500 for DQN, which is 10\% of total
+training, and step 50\,000 for PPO), the opponent is replaced with a
 \emph{frozen snapshot} of the current policy network.  The frozen weights
 are copied periodically (every 250 episodes / 25\,000 steps) rather than
 continuously, preventing distribution collapse: if the opponent updates
@@ -551,8 +560,9 @@ deterministic cycles.
 \subsection{Experimental Setup}
 
 All experiments were conducted on a single machine with an NVIDIA GPU.
-Both algorithms use PyTorch with automatic mixed precision disabled for
-reproducibility.  Each agent is trained independently for each value of
+Both algorithms are implemented in PyTorch \citep{paszke2019pytorch}
+with automatic mixed precision disabled for reproducibility, and both
+agents use the Adam optimizer \citep{kingma2015adam}.  Each agent is trained independently for each value of
 $k$; there is no weight sharing across $k$ settings.
 
 Table~\ref{tab:hyperparams} lists all hyperparameters.  The values were
@@ -576,23 +586,23 @@ Discount $\gamma$      & 0.99          & 0.99 \\
 Batch size             & 64            & 32 \\
 \midrule
 \multicolumn{3}{l}{\textit{DQN-specific}} \\
-Replay capacity        & 100\,000      & --- \\
-Target update (steps)  & 500           & --- \\
-$n$-step               & 3             & --- \\
-PER $\alpha$           & 0.6           & --- \\
-PER $\beta$ start      & 0.4           & --- \\
-$\varepsilon$ start/end & 1.0 / 0.05  & --- \\
-$\varepsilon$ decay    & 0.9995/ep     & --- \\
-Grad clip norm         & 10.0          & --- \\
+Replay capacity        & 100\,000      & -- \\
+Target update (steps)  & 500           & -- \\
+$n$-step               & 3             & -- \\
+PER $\alpha$           & 0.6           & -- \\
+PER $\beta$ start      & 0.4           & -- \\
+$\varepsilon$ start/end & 1.0 / 0.05  & -- \\
+$\varepsilon$ decay    & 0.9995/ep     & -- \\
+Grad clip norm         & 10.0          & -- \\
 \midrule
 \multicolumn{3}{l}{\textit{PPO-specific}} \\
-Rollout length $T$     & ---           & 128 \\
-GAE $\lambda$          & ---           & 0.95 \\
-Clip $\varepsilon$     & ---           & 0.2 \\
-Value coef $c_1$       & ---           & 0.5 \\
-Entropy coef $c_2$     & ---           & 0.01 \\
-Epochs per update      & ---           & 4 \\
-Grad clip norm         & ---           & 0.5 \\
+Rollout length $T$     & --            & 128 \\
+GAE $\lambda$          & --            & 0.95 \\
+Clip $\varepsilon$     & --            & 0.2 \\
+Value coef $c_1$       & --            & 0.5 \\
+Entropy coef $c_2$     & --            & 0.01 \\
+Epochs per update      & --            & 4 \\
+Grad clip norm         & --            & 0.5 \\
 \midrule
 \multicolumn{3}{l}{\textit{Curriculum (both)}} \\
 Self-play start        & ep 500        & step 50\,000 \\
@@ -608,18 +618,16 @@ Eval frequency         & every 250 ep  & every 10\,000 steps \\
 \textbf{Evaluation protocol.}  During training, win rates are measured
 every evaluation checkpoint over 100 games against the \emph{current
 training opponent} (random or frozen self-play).  Final evaluation uses
-1\,000 games against the random baseline and 50 games against the
-minimax search (depth 3 with alpha-beta pruning), due to the latter's
-slower execution.  Head-to-head evaluation uses 200 games (100 per
-starting player) to control for first-mover advantage.
+100 games against the random baseline and 100 games against the minimax
+search (depth 3 with alpha-beta pruning).  Head-to-head evaluation uses
+200 games (100 per starting player) to control for first-mover advantage.
 
 \textbf{Minimax baseline.}  Our minimax agent uses alpha-beta pruning
-with a simple heuristic: terminal positions score $\pm 1$ for win/loss
-and 0 otherwise; non-terminal positions at depth 0 also return 0 (no
-hand-crafted evaluation function).  At depth 3, the agent looks 3~ply
-ahead, which is sufficient to spot immediate winning moves and forced
-blocks but does not approach optimal play (which would require
-$O(42)$-ply lookahead for Connect-4).
+\citep{knuth1975alphabeta} with a simple terminal-only heuristic:
+positions that are won or lost score $\pm 1$; all other leaf nodes score
+0 (no hand-crafted board evaluation).  At depth 3, the agent can detect
+immediate threats and forced wins but lacks any positional reasoning
+beyond that horizon.
 
 \subsection{Learning Curves}
 
@@ -638,36 +646,32 @@ Connect-4 ($k{=}4$).
 \end{figure}
 
 \paragraph{DQN dynamics.}
-DQN enters the random-opponent phase with high exploration ($\eps = 1.0$)
-and achieves $\approx 55\%$ win rate by episode 500.  Upon switching to
-self-play, there is a brief dip of approximately 6 percentage points as
-the frozen opponent---now stronger than a random agent---presents harder
-positions.  The agent recovers quickly: prioritised replay focuses updates
-on the high-TD-error transitions that arise from the stronger opponent,
-effectively accelerating learning.  By episode 3\,000, DQN reaches
-$\approx 82\%$ win rate against random play, with further gains becoming
-marginal.  The Huber loss decreases monotonically from $\approx 0.28$ to
-$\approx 0.05$, reflecting increasingly accurate value estimates.
+DQN learns quickly: by episode 250 it already achieves 91\% win rate
+against the random opponent, reflecting rapid value learning enabled by
+the replay buffer.  After switching to self-play at episode 500, the win
+rate dips briefly before recovering and stabilising in the 92--99\%
+range for the rest of training.  The Huber loss decreases monotonically
+from 0.067 at episode 250 down to 0.021 at episode 5\,000, indicating
+consistently improving Q-value estimates.
 
 \paragraph{PPO dynamics.}
-PPO's learning curve is smoother due to the clipped surrogate objective
-preventing large policy updates.  It reaches $\approx 54\%$ win rate by
-timestep 50\,000, matching DQN at that milestone but from a slightly
-lower starting point.  The transition to self-play causes a similar but
-smaller dip ($\approx 4\%$), after which PPO climbs steadily to
-$\approx 79\%$ win rate at 500\,000 steps.  The entropy term in
-Eq.~\eqref{eq:ppo_total} maintains exploratory behaviour longer than
-DQN's $\varepsilon$-decay, visible as a slower initial rise but a more
-stable plateau.
+PPO also converges quickly during the random phase, reaching 86\% by
+timestep 10\,000 and 99\% by timestep 20\,000.  However, PPO's training
+is significantly less stable than DQN's.  The most striking event is a
+catastrophic collapse at the end of training: the win rate drops from
+$\sim$97\% to just 23\% at the final checkpoint (timestep 500\,000).
+This occurs after a fresh self-play opponent freeze, and the on-policy
+update rule is unable to quickly re-adapt.  Similar but less severe
+instabilities appear in the $k{=}5$ and $k{=}6$ runs
+(Figure~\ref{fig:allk}).  This is a practical limitation of on-policy
+methods when the self-play opponent changes abruptly.
 
 \paragraph{Sample efficiency.}
-DQN's 5\,000 episodes correspond to approximately 90\,000 environment
-steps (averaging $\approx 18$ moves per game), compared to PPO's 500\,000
-steps.  Despite using 5.6$\times$ fewer environment interactions, DQN
-achieves a higher final win rate, demonstrating the advantage of off-policy
-sample reuse.  The PER buffer ensures that early high-error transitions
-from the random phase continue to contribute to learning throughout
-training, effectively amplifying the value of each experience.
+DQN's 5\,000 episodes correspond to roughly 90\,000 environment steps
+(approximately 18 moves per game on average), versus PPO's 500\,000
+timesteps.  Despite using 5.5$\times$ fewer environment interactions,
+DQN maintains competitive win rates throughout training, demonstrating
+the value of off-policy replay for sample efficiency.
 
 \subsection{Final Evaluation Results}
 
@@ -678,16 +682,16 @@ evaluation for $k{=}4$.
   \centering
   \includegraphics[width=\columnwidth]{figures/fig_eval_bar.pdf}
   \caption{Final evaluation results for Connect-4 ($k{=}4$) over
-    100 games vs. random, 50 games vs. Minimax-3, and 200
-    head-to-head games.}
+    100 games vs. random, 100 games vs. Minimax-3, and 200
+    head-to-head games. Neither agent wins against Minimax-3.}
   \label{fig:eval}
 \end{figure}
 
 \begin{table}[ht]
 \centering
 \small
-\caption{Final evaluation results (Win / Draw / Loss rates).
-  All values are means over at least 50 games.}
+\caption{Final evaluation results (Win / Draw / Loss rates),
+  100 games per matchup except DQN vs PPO (200 games).}
 \label{tab:results}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{l ccc ccc ccc}
@@ -696,149 +700,179 @@ evaluation for $k{=}4$.
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
 \textbf{Matchup} & W & D & L & W & D & L & W & D & L \\
 \midrule
-DQN vs Rand  & .87 & .04 & .09 & .72 & .05 & .23 & .58 & .06 & .36 \\
-PPO vs Rand  & .79 & .06 & .15 & .67 & .07 & .26 & .54 & .08 & .38 \\
-DQN vs MM-3  & .44 & .18 & .38 & .32 & .20 & .48 & .22 & .24 & .54 \\
-PPO vs MM-3  & .36 & .20 & .44 & .26 & .22 & .52 & .18 & .26 & .56 \\
-DQN vs PPO   & .55 & .08 & .37 & .53 & .10 & .37 & .52 & .12 & .36 \\
+DQN vs Rand  & .96 & .00 & .04 & .97 & .02 & .01 & .75 & .24 & .01 \\
+PPO vs Rand  & .72 & .00 & .28 & .83 & .07 & .10 & .48 & .43 & .09 \\
+DQN vs MM-3  & .00 & .00 & 1.0 & .00 & .00 & 1.0 & .00 & .00 & 1.0 \\
+PPO vs MM-3  & .00 & .00 & 1.0 & .00 & .00 & 1.0 & .00 & 1.0 & .00 \\
+DQN vs PPO   & 1.0 & .00 & .00 & 1.0 & .00 & .00 & 1.0 & .00 & .00 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Against the random baseline.}
-Both agents decisively defeat the random opponent.  DQN's 87\% win rate
-reflects its more aggressive exploitation of tactical patterns---the
-Q-function accurately values board positions and the greedy policy
-consistently threatens multi-directional wins.  PPO's lower win rate (79\%)
-is partly attributable to residual stochasticity in the policy (sampling
-from $\pi_\theta$ rather than taking argmax), though we evaluate the
-greedy (argmax) policy for PPO at test time to ensure fair comparison.
+Both agents decisively beat the random opponent.  DQN achieves 96\% win
+rate at $k{=}4$, rising to 97\% at $k{=}5$ before dropping to 75\% at
+$k{=}6$ as draws become more common (24\% draw rate).  PPO reaches 72\%
+at $k{=}4$ and 83\% at $k{=}5$, but drops to 48\% wins and 43\% draws
+at $k{=}6$.  The overall gap between DQN and PPO (roughly 15--24
+percentage points in win rate) is consistent across $k$ and reflects
+DQN's more accurate Q-values learned from off-policy replay.
 
 \paragraph{Against Minimax-3.}
-Both agents win roughly 40\% and 36\% of games respectively against the
-minimax agent.  Since our minimax uses no hand-crafted board evaluation at
-the leaf nodes, it cannot plan beyond the horizon.  The RL agents exploit
-this: they learn to force positions where winning requires more than 3
-moves of lookahead.  The substantial draw rate ($\approx 20\%$) reflects
-games where neither agent's horizon captures the critical threat.  DQN's
-advantage over PPO is more pronounced here (44\% vs 36\% win rate) because
-the Q-function implicitly approximates a multi-step lookahead through
-Bellman bootstrapping and 3-step returns, while PPO's value estimates are
-less precisely calibrated.
+Neither agent wins a single game against the depth-3 minimax at $k{=}4$
+or $k{=}5$.  At $k{=}6$, DQN still loses every game, while PPO manages
+to draw every game (presumably because neither side can complete a
+6-chain quickly enough).  This is the most striking result of our
+experiments: agents that win 96--97\% of games against random opponents
+are completely shut down by even a shallow lookahead search.  The
+minimax agent does not use any learned heuristic; it simply looks 3 plies
+ahead and evaluates terminal positions exactly.  This suggests the RL
+agents learned to exploit random play (which never blocks intentionally)
+but failed to develop the strategic foresight needed to counter an
+opponent that plays optimally within its search horizon.
 
 \paragraph{Head-to-head.}
-DQN wins 55\% of direct encounters with PPO.  The gap narrows compared to
-the minimax matchup, suggesting that DQN's advantage is primarily in
-\emph{tactical depth} rather than strategic understanding.  Against the
-weaker PPO policy, perfect lookahead is less important.  The draw rate
-(8\%) is lower than vs.\ minimax because both learned policies are
-aggressive and rarely allow stalemates.
+DQN wins all 200 head-to-head games against PPO across every value of
+$k$.  This is a much stronger result than one might expect from the
+random-baseline numbers alone.  When PPO faces an opponent with more
+accurately calibrated Q-values, its policy falls apart completely.  This
+suggests DQN's learned policy is qualitatively different from PPO's, not
+just marginally stronger.
 
 \subsection{Performance Across Difficulty Levels}
 
-Figure~\ref{fig:cross_k} shows how both agents scale across $k \in
-\{4, 5, 6\}$.
+Figure~\ref{fig:cross_k} shows how win and draw rates against the random
+opponent scale across $k \in \{4, 5, 6\}$.
+Figure~\ref{fig:allk} shows the training curves for $k{=}5$ and $k{=}6$.
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\columnwidth]{figures/fig_cross_k.pdf}
-  \caption{Win rates across $k$ values.  As $k$ increases, longer
-    winning sequences are required, demanding more long-term planning.}
+  \caption{\textbf{Left}: win rate vs. random opponent across $k$.
+    \textbf{Right}: draw rate vs. random opponent across $k$, showing
+    the large increase in draws at $k{=}6$.}
   \label{fig:cross_k}
 \end{figure}
 
-Both agents degrade as $k$ increases, confirming that the task becomes
-harder.  Several observations stand out:
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/fig_all_k_curves.pdf}
+  \caption{Training win rate for $k{=}5$ (left) and $k{=}6$ (right).
+    PPO shows repeated instabilities and crashes, particularly at $k{=}5$.}
+  \label{fig:allk}
+\end{figure}
 
-\textbf{(i) DQN degrades more gracefully.}  From $k{=}4$ to $k{=}6$,
-DQN's win rate against random drops by 29 percentage points (87\%
-$\to$ 58\%), while PPO drops by 25 points (79\% $\to$ 54\%).  Against
-the minimax baseline, DQN drops by 22 points (44\% $\to$ 22\%) and
-PPO by 18 points (36\% $\to$ 18\%).  The \emph{absolute} win rate at
-each $k$ is consistently higher for DQN, suggesting that the
-multi-step return and PER provide a genuine advantage when longer
-planning is required.
+Several observations stand out from the cross-$k$ results:
 
-\textbf{(ii) The minimax margin widens with $k$.}  At $k{=}4$,
-minimax-3 looks far enough ahead to beat both agents roughly half the
-time.  At $k{=}6$, minimax-3 wins around 54\% of games against DQN and
-56\% against PPO.  When $k$ is large, winning requires setting up
-longer chains that take more moves to complete; a depth-3 search
-cannot see the decisive move, but the RL agents' policies are also less
-well-calibrated because fewer training games reach the critical late-game
-positions.
+\textbf{(i) Win rates drop with $k$, but draws increase sharply.}
+DQN's win rate falls from 96\% at $k{=}4$ to 75\% at $k{=}6$, while
+PPO's drops from 72\% to 48\%.  The decline is partly offset by draws:
+at $k{=}6$, DQN draws 24\% of games against random and PPO draws 43\%.
+This makes sense; when $k$ is large, completing a winning chain is harder
+and both players are more likely to fill the board without a winner.
 
-\textbf{(iii) DQN advantage is stable across $k$.}  DQN consistently
-leads PPO by 7--9 percentage points vs. random and 6--8 points vs.
-minimax-3, regardless of $k$.  This robustness suggests the advantage is
-architectural (dueling, PER, multi-step) rather than incidental.
+\textbf{(ii) PPO instability worsens with $k$.}  As shown in
+Figure~\ref{fig:allk}, PPO's win-rate curves at $k{=}5$ and $k{=}6$
+exhibit multiple large drops, sometimes falling to near 0\% before
+recovering.  DQN's curves are comparatively smooth across all three $k$
+values.  The off-policy replay buffer appears to stabilise DQN by
+retaining transitions from earlier, better-behaved policies even when
+the current self-play opponent is strong.
+
+\textbf{(iii) The minimax failure is universal.}  Across all $k$
+values, neither DQN nor PPO wins a single game against minimax-3
+(Table~\ref{tab:results}).  The failure is not a $k$-specific
+phenomenon; it reflects a fundamental inability of the model-free
+policies to handle an opponent with explicit lookahead, regardless of
+the difficulty setting.
 
 \subsection{Analysis and Discussion}
 
 \paragraph{Why DQN outperforms PPO.}
-We attribute DQN's edge to three factors that collectively improve
-sample quality and value estimation accuracy:
+We attribute DQN's consistent edge to three factors:
 \begin{enumerate}
   \item \textbf{Sample reuse.}  The replay buffer holds 100\,000
-  transitions; each gradient step uses data from across the entire
-  training history.  PPO discards the rollout after each update, limiting
-  reuse to 4 epochs over 128 transitions.
+  transitions; each gradient step draws from the entire training history.
+  PPO discards the rollout after each update, limiting reuse to 4 epochs
+  over 128 transitions.  When the self-play opponent shifts abruptly, DQN
+  can still learn from past experience while PPO is stuck with only the
+  most recent (now misleading) rollout.
   \item \textbf{Prioritised sampling.}  PER focuses updates on
-  high-TD-error transitions, which correspond to board positions where the
-  agent's current value estimate is most wrong---typically tactically
-  critical positions.
+  high-TD-error transitions, which tend to be the tactically critical
+  board positions where the agent's estimates are most wrong.  This
+  accelerates learning of the key patterns that distinguish good play.
   \item \textbf{$n$-step bootstrapping.}  The 3-step return propagates
-  the terminal reward 3 moves backward in a single update.  In Connect-4,
-  the decisive sequence often spans 3--5 moves, so $n=3$ provides a
-  nearly complete look at the winning line.
+  the win/loss signal further back in a single update, which is important
+  in Connect-$k$ where the decisive sequence often spans several moves.
 \end{enumerate}
 
-\paragraph{PPO's advantages.}
-Despite lower final performance, PPO has several practical advantages: (a)
-its training curves are smoother, making it easier to diagnose instabilities;
-(b) the entropy bonus provides principled, adaptive exploration without
-requiring a manual decay schedule; (c) it does not require a replay buffer,
-reducing memory usage by $\approx 300$~MB; and (d) its on-policy nature
-avoids distribution-shift artefacts that can arise when the behaviour policy
-changes rapidly.
+\paragraph{Why neither agent beats minimax.}
+The total failure against depth-3 minimax deserves direct discussion.
+Our minimax does not use a heuristic evaluation function; it only knows
+about terminal positions.  Yet it still wins every game.  We believe the
+reason is that the RL agents learned a policy calibrated for opponents
+that do not actively block threats (i.e., random play and frozen
+self-play snapshots that were not themselves optimal blockers).  A
+depth-3 search, however, will always detect an immediate threat or
+3-move forced win and respond to it.  The RL agents appear to rely on
+multi-move setups that go unblocked against random opponents but are
+trivially deflected by even shallow search.  This points to a well-known
+limitation of model-free RL in deterministic, perfect-information games:
+without some form of lookahead at inference time, the policy struggles
+against opponents that do think ahead \citep{silver2016alphago,
+silver2018alphazero}.
+
+\paragraph{PPO's practical limitations.}
+Beyond the performance gap, PPO's training instability is a real
+practical concern.  The catastrophic win-rate collapse near the end of
+the $k{=}4$ run (from $\sim$97\% to 23\%) and repeated crashes in
+$k{=}5$ mean that an engineer deploying PPO for self-play board games
+would need to implement careful checkpointing and rollback logic.  DQN
+does not exhibit this behavior.  That said, PPO has genuine advantages:
+it requires no replay buffer (saving $\approx$300~MB of memory), its
+entropy bonus provides automatic exploration without a tuned decay
+schedule, and it is simpler to implement correctly.
 
 \paragraph{Limitations.}
-Both agents are trained and tested as first-mover (Player~1).  A more
-rigorous evaluation would train and evaluate separately as each player.
-Additionally, the minimax baseline does not use a hand-crafted evaluation
-function at depth 0; a stronger minimax (e.g., depth 7 with heuristic
-evaluation) would likely reveal larger gaps.  Finally, the synthetic
-nature of the training data in our figures means that confidence intervals
-could not be computed across multiple runs.
+Both agents are evaluated as the first-mover only; a more rigorous study
+would train and test as each player separately.  Training was done for a
+single run per $(k, \text{algorithm})$ combination, so we cannot report
+confidence intervals.  Finally, a stronger minimax baseline (e.g., depth
+7 with a heuristic evaluation function) or an MCTS agent would reveal
+whether the failure is specific to depth-3 search or a more fundamental
+limitation.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have presented a controlled comparison of Rainbow DQN and PPO on
-Connect-$k$, a parametric two-player board game.  A shared convolutional
-encoder, board-flipping state representation, and two-phase self-play
-curriculum allow both algorithms to learn competitive policies from scratch.
-Rainbow DQN consistently outperforms PPO across all difficulty levels ($k
-\in \{4, 5, 6\}$) and against all opponents, with a 87\% vs.\ 79\%
-win rate against random play and 44\% vs.\ 36\% against a depth-3
-minimax search on Connect-4.
+We presented a controlled comparison of Rainbow DQN and PPO on
+Connect-$k$, a parametric two-player board game.  Both algorithms learn
+competitive policies from scratch using a shared convolutional encoder
+and a two-phase self-play curriculum.  The results are clear: DQN
+dominates PPO in head-to-head play (100\% win rate across all $k$
+values) and achieves substantially higher win rates against random
+opponents (96\% vs 72\% at $k{=}4$).  DQN's advantage comes from
+off-policy sample reuse, prioritized experience replay, and multi-step
+bootstrapping, which together produce more accurate Q-values and more
+stable training.
 
-The advantage of DQN can be attributed to off-policy sample reuse,
-prioritized experience replay, and multi-step bootstrapping---all of which
-help propagate sparse terminal rewards through long episodes.  PPO's
-smoother dynamics and lower memory footprint make it an attractive
-alternative when stability is paramount.
+The most important finding, however, is that \emph{neither agent wins a
+single game against a depth-3 minimax search}.  This reveals a
+fundamental gap between pattern-matching neural policies trained on
+random and self-play opponents and even shallow tree-based lookahead.
+Both agents learned to exploit opponents that do not actively block
+threats, but failed to generalize to an opponent that does.
 
 \paragraph{Future work.}
-Several extensions are natural: (1)~adding Monte Carlo Tree Search at
-inference time (as in AlphaZero), which is orthogonal to the policy
-representation and could substantially improve both agents; (2)~exploring
-distributional RL (C51 or QR-DQN) to provide better uncertainty
-estimates; (3)~scaling to larger boards (e.g., 7$\times$8, $k{=}5$) to
-test whether convolutional representations transfer; and (4)~adopting a
-league-training framework \citep{silver2018alphazero} with a population
-of policies to avoid forgetting through self-play.
+The most natural next step is adding Monte Carlo Tree Search at inference
+time, as in AlphaGo Zero \citep{silver2017alphagozero} and AlphaZero
+\citep{silver2018alphazero}, which would give the policy access to the
+lookahead it currently lacks.  Other promising directions include
+distributional RL (C51 or QR-DQN) for better value uncertainty
+estimates, training against a stronger minimax baseline to force genuine
+strategic learning, and a league-training framework to prevent
+catastrophic forgetting during self-play.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \bibliographystyle{plainnat}

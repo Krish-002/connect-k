@@ -1,0 +1,29 @@
+{
+  "k": 6,
+  "dqn_vs_random": {
+    "win_rate": 0.75,
+    "loss_rate": 0.01,
+    "draw_rate": 0.24
+  },
+  "ppo_vs_random": {
+    "win_rate": 0.48,
+    "loss_rate": 0.09,
+    "draw_rate": 0.43
+  },
+  "dqn_vs_minimax3": {
+    "win_rate": 0.0,
+    "loss_rate": 1.0,
+    "draw_rate": 0.0
+  },
+  "ppo_vs_minimax3": {
+    "win_rate": 0.0,
+    "loss_rate": 0.0,
+    "draw_rate": 1.0
+  },
+  "dqn_vs_ppo": {
+    "agent1_wins": 200,
+    "agent2_wins": 0,
+    "draws": 0,
+    "agent1_win_rate": 1.0
+  }
+}
