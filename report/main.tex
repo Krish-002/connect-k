@@ -271,17 +271,18 @@ new and old policies.
 \label{sec:related}
 
 \paragraph{Classical Connect Four solvers.}
-\citet{allis1994connect4} and \citet{tromp1995connectfour} solved
-Connect-4 optimally using alpha-beta minimax search with hand-crafted
-evaluation functions and perfect-information databases.  These methods
-achieve provably optimal play but require exhaustive precomputation
-($O(10^{12})$ positions) and do not generalise to other values of $k$
-without re-solving from scratch.
+\citet{allis1994connect4} solved Connect-4 using a knowledge-based
+approach built on nine hand-crafted strategic rules, without relying on
+brute-force search.  \citet{tromp1995connectfour} later produced a
+complete solution via an exhaustive 8-ply opening database.  These
+methods achieve provably optimal play but do not generalise to other
+values of $k$ without re-solving from scratch.
 
 \paragraph{TD-Gammon and tabular self-play.}
 \citet{tesauro1995tdgammon} demonstrated that TD($\lambda$) with a
-neural network and pure self-play could reach expert-level backgammon
-play.  This pioneering result directly motivates our self-play curriculum,
+neural network trained via self-play could reach expert-level backgammon
+play, with the strongest version additionally relying on hand-crafted
+input features.  This pioneering result directly motivates our self-play curriculum,
 though our approach uses modern deep RL algorithms rather than
 hand-crafted features.
 
